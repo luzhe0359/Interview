@@ -22,15 +22,15 @@
 
 **置换元素** 
 
-> 浏览器根据元素的标签和属性，来决定元素的具体显示内容。这些置换元素往往没有实际内容，即是一个空元素。例如：浏览器根据<img>标签的`src`属性显示图片，根据<input>标签的`type`属性决定显示输入框还是按钮。
+> 浏览器根据元素的标签和属性，来决定元素的具体显示内容。这些置换元素往往没有实际内容，即是一个空元素。例如：浏览器根据<img>标签的`src`属性显示图片，根据`<input>`标签的`type`属性决定显示输入框还是按钮。
 
-<img>、<input>、<textarea>、<select>、<object>、
+img、input、textarea、select>、object
 
 **非置换元素**
 
 > 浏览器中的大多数元素都是不可置换元素，即其内容直接展示给浏览器。
 
-<label>、<p>
+label、p
 
 
 
@@ -266,7 +266,7 @@ white-space: nowrap; /* 文本不换行 */
 
 **默认值 static**
 
-没有定位，元素出现在正常的流中（忽略 top, bottom, left, right 及 z-index 声明）
+没有定位，元素出现在正常的流中（忽略 top， bottom， left， right 及 z-index 声明）
 
 场景：默认布局
 
@@ -389,7 +389,7 @@ white-space: nowrap; /* 文本不换行 */
   - 避免频繁操作DOM，使用文档片段创建一个子树，然后再拷贝到文档中
   - 先隐藏元素，进行修改后再显示该元素，因为display:none上的DOM操作不会引发回流和重绘
   - 避免循环读取会引发回流/重绘的属性，在循环之前把它们存起来
-  - 对于复杂动画效果,使用绝对定位让其脱离文档流，否则会引起父元素及后续元素大量的回流
+  - 对于复杂动画效果，使用绝对定位让其脱离文档流，否则会引起父元素及后续元素大量的回流
 
 ## V8垃圾回收机制
 
@@ -403,30 +403,162 @@ V8 的垃圾回收策略主要基于分代式垃圾回收机制，在 V8 中，�
 
 ## 从输入URL到页面加载完成期间经历了什么？
 
-1. DNS域名解析，浏览器查找域名对应的 IP 地址
-2. 发起TCP连接（三次握手）
-3. 发送HTTP请求，接受HTTP响应
-4. 断开TCP连接（四次挥手）
-5. 浏览器解析HTML代码，请求js，css等资源，最后进行页面渲染，呈现给用户
+- 输入网址
+
+- 发送到DNS服务器，并获取域名对应的web服务器对应的ip地址
+
+- 与web服务器建立TCP连接
+
+- 浏览器向web服务器发送http请求
+
+- web服务器响应请求，并返回指定url的数据（或错误信息，或重定向的新的url地址）
+
+- 浏览器下载web服务器返回的数据及解析html源文件
+
+- 生成DOM树，解析css和js，渲染页面，直至显示完成
 
 
 
-**基础版**
+# Vue
 
-- 浏览器根据请求的 `URL` 交给 `DNS` 域名解析，找到真实 `IP`，向服务器发起请求；
-- 服务器交给后台处理完成后返回数据，浏览器接收文件（`HTML`、`JS`、`CSS`、图像等）；
-- 浏览器对加载到的资源（`HTML`、`JS`、`CSS` 等）进行语法解析，建立相对应的内部数据结构（如 `HTML` 的 `DOM`）；
-- 载入解析到的资源文件，渲染页面，完成。
+## 讲一讲MVVM？
 
-## 三次握手
+MVVM是`Model-View-ViewModel`缩写，也就是把`MVC`中的`Controller`演变成`ViewModel`。Model层代表数据模型，View代表UI组件，ViewModel是View和Model层的桥梁，数据会绑定到viewModel层并自动将数据渲染到页面中，视图变化的时候会通知viewModel层更新数据。
 
-解析HTML生成DOM树。
 
-解析CSS生成CSSOM规则树。
 
-将DOM树与CSSOM规则树合并在一起生成渲染树。
 
-遍历渲染树开始布局，计算每个节点的位置大小信息。
 
-将渲染树每个节点绘制到屏幕。
+
+
+## 生命周期
+
+`beforeCreate`是new Vue()之后触发的第一个钩子，在当前阶段data、methods、computed以及watch上的数据和方法都不能被访问。
+
+`created`在实例创建完成后发生，当前阶段已经完成了数据观测，也就是可以使用数据，更改数据，在这里更改数据不会触发updated函数。可以做一些初始数据的获取，在当前阶段无法与Dom进行交互，如果非要想，可以通过vm.$nextTick来访问Dom。
+
+`beforeMount`发生在挂载之前，在这之前template模板已导入渲染函数编译。而当前阶段虚拟Dom已经创建完成，即将开始渲染。在此时也可以对数据进行更改，不会触发updated。
+
+`mounted`在挂载完成后发生，在当前阶段，真实的Dom挂载完毕，数据完成双向绑定，可以访问到Dom节点，使用$refs属性对Dom进行操作。
+
+`beforeUpdate`发生在更新之前，也就是响应式数据发生更新，虚拟dom重新渲染之前被触发，你可以在当前阶段进行更改数据，不会造成重渲染。
+
+`updated`发生在更新完成之后，当前阶段组件Dom已完成更新。要注意的是避免在此期间更改数据，因为这可能会导致无限循环的更新。
+
+`beforeDestroy`发生在实例销毁之前，在当前阶段实例完全可以被使用，我们可以在这时进行善后收尾工作，比如清除计时器。
+
+`destroyed`发生在实例销毁之后，这个时候只剩下了dom空壳。组件已被拆解，数据绑定被卸除，监听被移出，子实例也统统被销毁。
+
+![生命周期](D:\Users\lenovo\Desktop\lifecycle.png)
+
+## Vue2.x响应式数据原理
+
+Vue在初始化数据时，会使用`Object.defineProperty`重新定义data中的所有属性，当页面使用对应属性时，首先会进行依赖收集(收集当前组件的`watcher`)如果属性发生变化会通知相关依赖进行更新操作(`发布订阅`)。
+
+
+
+## Vue3.x响应式数据原理
+
+Vue3.x改用`Proxy`替代Object.defineProperty。因为Proxy可以直接监听对象和数组的变化，并且有多达13种拦截方法。并且作为新标准将受到浏览器厂商重点持续的性能优化。
+
+以上vue面试题出自 https://juejin.im/post/5e649e3e5188252c06113021#heading-15
+
+
+
+## vue有哪些常见的指令？
+
+v-html、v-text、v-show、v-if、v-on、v-for、v-bind   ...
+
+
+
+## v-if 和 v-show 区别
+
+**v-show** 
+
+仅仅控制元素的显示方式，将 display 属性在 block 和 none 来回切换
+
+场景：当我们需要经常切换某个元素的显示/隐藏时，使用v-show会更加节省性能上的开销；
+
+**v-if**
+
+会控制这个 DOM 节点的存在与否。
+
+场景：当只需要一次显示或隐藏时，使用v-if更加合理。
+
+
+
+## Vue组件如何通信？
+
+- `props/$emit+v-on`
+
+  通过`props`将数据自上而下传递，而通过`$emit`和`v-on`来向上传递信息。
+
+- EventBus
+
+  通过`EventBus`进行信息的发布与订阅
+
+- vuex
+
+  是全局数据管理库，可以通过vuex管理全局的数据流
+
+- `$attrs/$listeners`:
+
+  Vue2.4中加入的`$attrs/$listeners`可以进行跨级的组件通信
+
+- provide/inject
+
+  以允许一个祖先组件向其所有子孙后代注入一个依赖，不论组件层次有多深，并在起上下游关系成立的时间里始终生效，这成为了跨组件通信的基础
+
+
+
+## computed和watch有什么区别?
+
+**computed**
+
+1. `computed`是计算属性，也就是计算值，它更多用于计算值的场景
+2. `computed`具有缓存性，computed的值在getter执行后是会缓存的，只有在它依赖的属性值改变之后，下一次获取computed的值时才会重新调用对应的getter来计算
+3. `computed`适用于计算比较消耗性能的计算场景
+
+**watch**
+
+1. 更多的是「观察」的作用，类似于某些数据的监听回调，用于观察`props` `$emit`或者本组件的值，当数据变化时来执行回调进行后续操作
+2. 无缓存性，页面重新渲染时值不变化也会执行
+
+
+
+## Vue是如何实现双向绑定的?
+
+采用数据劫持结合发布者-订阅者模式的方式，通过`Object.defineProperty()`来劫持各个属性的setter，getter，在数据变动时发布消息给订阅者，触发相应的监听回调。
+
+
+
+## Vue路由传参
+
+- Vuex
+
+- params传参（url中显示参数）
+
+  定义路由：`{path: "/one/login/:num"} `
+
+  传参方式：`<router-link to="/one/login/001">`
+
+  获取方法：`this.$route.params.num`
+
+- params传参（url中不显示参数）
+
+  定义路由： `{path:'/one/home/'，name:'home'}`
+
+  传参方式：`<router-link :to="{name:'home',params:{id:001}}>`  
+
+  获取方法：`this.$route.params.id`
+
+- 使用query实现路由传参
+
+  传参方式：`<router-link :to="{name:'home',query:{id:001}}`>
+
+  获取方法：` this.$route.query.id`
+
+- js中使用query传参
+
+  `this.$router.push({path: '/backend/order', query: {selected: "2"}});`
 
