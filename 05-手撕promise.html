@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  /*
+    1. 概念: Promise 的构造函数接收了一个回调函数，这个回调就是下面要讲到的执行器（executor），
+    executor 里面的 resolve, reject 也是两个函数，负责改变 Promise 实例的状态和它的值，then 函数中的回调在状态改变后执行，除此之外 then 还支持链式调用。
+    2. 三种状态：pending（等待）、fulfilled（已完成）、rejected（已拒绝）。
+    */
+
+  // 简单实现
+  class _Promise {
+    constructor(executor) {
+      // 校验executor
+      if (typeof executor !== "function") {
+        throw new Error(`Promise resolver ${executor} is not a function!`);
+      };
+
+      this.value = undefined; //终值=>resolve的值
+      this.reason = undefined;//拒因=>reject的值
+      this.state = "pending";//状态
+
+      const resolve = (value) => {
+        // 成功后的一系列操作（状态的改变，成功回调的执行）
+        if (this.state === "pending") {
+          this.state = "fulfilled";
+          this.value = value;
+        };
+      };
+      const reject = (reason) => {
+        // 失败后的一系列操作（状态的改变，成功回调的执行）
+        if (this.state === "pending") {
+          this.state = "rejected";
+          this.reason = reason;
+        }
+      };
+      executor(resolve, reject);
+    }
+    then(onFulfilled, onRejected) {
+
+      // onFulfilled未传值或传的值不是function的时候
+      // 自动把onFulfilled变成一个函数
+      if (typeof onFulfilled !== "function") {
+        onFulfilled = value => value;
+      };
+
+      //onRejected未传值或传的值不是function的时候
+      //自动把onFulfilled变成一个函数，并抛出错误
+      if (typeof onRejected !== "function") {
+        onRejected = reason => { throw reason }
+      };
+
+      if (this.state === "fulfilled") {
+        onFulfilled(this.value);
+      };
+
+      if (this.state === "rejected") {
+        onRejected(this.reason);
+      };
+    }
+  };
+</script>
+
+</html>

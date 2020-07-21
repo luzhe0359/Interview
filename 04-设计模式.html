@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<a href="https://blog.csdn.net/weixin_46124214/article/details/105066290">设计模式好文</a>
+<script>
+  // 设计模式
+
+  /*
+    1. 工厂模式 https://www.jianshu.com/p/11918dd0f694
+    概念：工厂模式是用来创建对象的一种最常用的设计模式。
+          我们不暴露创建对象的具体逻辑，而是将将逻辑封装在一个函数中，那么这个函数就可以被视为一个工厂。
+    场景：在实际的项目中，我们常常需要根据用户的权限来渲染不同的页面，高级权限的用户所拥有的页面有些是
+          无法被低级权限的用户所查看。所以我们可以在不同权限等级用户的构造函数中，保存该用户能够看到的页面。
+    */
+
+  let UserFactory = function (role) {
+    function SuperAdmin() {
+      this.name = "超级管理员",
+        this.viewPage = ['首页', '通讯录', '发现页', '应用数据', '权限管理']
+    }
+    function Admin() {
+      this.name = "管理员",
+        this.viewPage = ['首页', '通讯录', '发现页', '应用数据']
+    }
+    function NormalUser() {
+      this.name = '普通用户',
+        this.viewPage = ['首页', '通讯录', '发现页']
+    }
+
+    switch (role) {
+      case 'superAdmin':
+        return new SuperAdmin();
+        break;
+      case 'admin':
+        return new Admin();
+        break;
+      case 'user':
+        return new NormalUser();
+        break;
+      default:
+        throw new Error('参数错误, 可选参数:superAdmin、admin、user');
+    }
+  }
+
+  //调用
+  let superAdmin = UserFactory('superAdmin');
+  let admin = UserFactory('admin')
+  let normalUser = UserFactory('user')
+
+  /*
+    2.观察者模式
+    概念：定义了对象间一种一对多的依赖关系（一个目标者，即：被观察者，多个观察者），
+          当目标对象 Subject 的状态发生改变时，所有依赖它的对象 Observer 都会得到通知。
+  */
+  // 目标者类
+  class Subject {
+    constructor() {
+      this.observers = [];  // 观察者列表
+    }
+    // 添加
+    add(observer) {
+      this.observers.push(observer);
+    }
+    // 删除
+    remove(observer) {
+      let idx = this.observers.findIndex(item => item === observer);
+      idx > -1 && this.observers.splice(idx, 1);
+    }
+    // 通知
+    notify() {
+      for (let observer of this.observers) {
+        observer.update();
+      }
+    }
+  }
+
+  // 观察者类
+  class Observer {
+    constructor(name) {
+      this.name = name;
+    }
+    // 目标对象更新时触发的回调
+    update() {
+      console.log(`目标者通知我更新了，我是：${this.name}`);
+    }
+  }
+
+  // 实例化目标者
+  let subject = new Subject();
+
+  // 实例化两个观察者
+  let obs1 = new Observer('前端开发者');
+  let obs2 = new Observer('后端开发者');
+
+  // 向目标者添加观察者
+  subject.add(obs1);
+  subject.add(obs2);
+
+  // 目标者通知更新
+  subject.notify();
+  // 输出：
+  // 目标者通知我更新了，我是前端开发者
+  // 目标者通知我更新了，我是后端开发者
+
+  /*
+    3.发布订阅模式
+    概念：发布订阅模式与观察者模式的不同，“第三者” （事件中心）出现。
+          目标对象并不直接通知观察者，而是通过事件中心来派发通知。
+    场景：Vue 的双向数据绑定;
+          Vue 的父子组件通信 $on/$emit
+  */
+
+
+  /*
+    4.单例模式
+    概念：限制类实例化次数只能一次，一个类只有一个实例，并提供一个访问它的全局访问点。
+          如果希望在系统中某个类的对象只能存在一个，单例模式是最好的解决方案。
+    场景：有一些对象我们往往只需要一个，比如全局缓存、浏览器中的window对象等。
+  */
+</script>
+
+</html>

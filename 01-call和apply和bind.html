@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+  // 手写 call, apply, bind
+  /* 
+    这里我们需要考虑两点：
+     1. 第一个参数为undefined或null的时候，转变this指向为 window
+     2. 改变了this执行，让新的对象可以执行该函数。
+    */
+
+
+  // 手写一个call
+  // 在函数原型上增加_call方法
+  Function.prototype._call = function (content, ...rest) {
+    if (typeof this !== 'function') {
+      throw new TypeError('Error')
+    }
+    content = content || window
+
+    // console.log("内部this ： " + this) // function callEvent() {console.log(this);console.log(this.name)}
+    content.fn = this
+
+    let result = content.fn(...rest) // 执行该属性，这里用到了展开运算符进行传参
+    // console.log("内部result ： " + result) // undefined, 因为 callEvent 没有返回值，如果有返回值则result为该值
+
+    delete content.fn
+    return result
+  }
+  /*
+    实现过程分析：
+    1. 首先context为可选参数，如果不传的话默认上下文是window
+    2. 改变this指向：将调用_call的函数作为content对象的属性(content.fn)
+    3. 最后调用函数并将contetn对象上的属性fn删除(不能增加对象的属性，所以在结尾需要delete)
+    */
+
+  var obj = {
+    name: "对象-name",
+    age: 20
+  }
+  var name = "全局-name"
+
+  function callEvent(a, b) {
+    console.log(this)
+    console.log(this.name)
+    console.log([a, b])
+    // return this.age  
+  }
+
+  callEvent(1, 2) // window  全局-name  [1, 2]
+  callEvent._call(obj, 1, 2) // {name: "对象-name", age: 20, fn: ƒ}  对象-name  [1, 2]
+
+
+  // 手写一个apply 
+  console.log('-----------------------------------')
+  Function.prototype._apply = function (content, args) {
+    if (typeof this !== 'function') {
+      throw new TypeError('Error')
+    }
+
+    content = content || window
+    content.fn = this
+    let result = args ? content.fn(...args) : content.fn()
+
+    delete content.fn
+    return result
+  }
+
+  /*
+    实现过程分析：
+    1. 基本同 _call
+    2. 不同之处，传参方式，_apply中第二个参数是数组，还要再判断一下args是否有值。
+    */
+
+  var obj = {
+    name: "对象-name",
+    age: 20
+  }
+  var name = "全局-name"
+
+  function applyEvent(a, b) {
+    console.log(this)
+    console.log(this.name)
+    console.log([a, b])
+    return this.age
+  }
+
+  applyEvent(1, 2) // window  全局-name  [1, 2]
+
+  applyEvent._apply(obj, [1, 2]) // {name: "对象-name", age: 20, fn: ƒ}  对象-name  [1, 2]
+
+
+  // 手写一个 bind
+  // bindEvent.bind(obj,1)(2)
+  console.log('-----------------------------------')
+  Function.prototype._bind = function (content) {
+    if (typeof this !== 'function') {
+      throw new TypeError('Error')
+    }
+    // 此处的_this就是原函数，执行该原函数 绑定原函数this的时候要注意判断。
+    // 如果_this是构造函数F new出来的实例，那么此处的this一定是该实例本身。
+    // 反之，则是bind方法传递的this(context) 。最后再把两次获得的参数连接起来传递进去
+    let _this = this
+    // 去除content的其他参数 转成数组
+    let args = [...arguments].slice(1)
+    let fnBind = function () {
+      console.log('_this')
+      console.log(_this)
+      // 可能返回了一个构造函数，new F()，所以需要判断。如果当前函数的this指向的是构造函数中的_this 则判定为new 操作
+
+      // 这个是典型的属性继承的方法，本来使用 fnBind.prototype = _this.prototype 就可以将原属性继承过来了，
+      // 但是这样两个对象属性都指向同一个地方，修改 fnBind.prototype 将会造成 _this.prototype也发生改变.
+      // 这样并不是我们的本意。所以通过一个空函数 fnEmpty 做中转，能有效的防止这种情况的发生。
+
+      return _this.apply(this instanceof _this ? this : content, [...args, ...arguments])
+    }
+
+    var fnEmpty = function () { } // 定义一个空函数, 来做中间人，承接原函数的原型丢给绑定函数，
+    if (this.prototype) {  //  箭头函数没有 prototype，箭头函数this永远指向它所在的作用域
+      fnEmpty.prototype = this.prototype;
+    }
+
+    fnBind.prototype = new fnEmpty()
+
+    return fnBind
+  }
+  var obj = {
+    name: "对象-name",
+    age: 20
+  }
+  var name = "全局-name"
+
+  function bindEvent() {
+    console.log(this)
+    console.log(this.name)
+    console.log([...arguments])
+    return this.age
+  }
+
+  bindEvent(1, 2) // window  全局-name  [1, 2]
+
+  bindEvent._bind(obj, 1, 1)(2) // {name: "对象-name", age: 20, fn: ƒ}  对象-name  [1, 1, 2]
+
+
+</script>
+
+</html>

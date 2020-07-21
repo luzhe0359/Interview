@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<input id="debounce" type="text">
+
+<body>
+  <script>
+
+    document.querySelector("#debounce").onkeyup = debounce(keyUp, 2000);
+    // 要触发的事件
+    function keyUp(e, a) {
+      console.log('键盘抬起')
+      console.log(e)
+      console.log(arguments)
+    }
+    /* 
+      原理：在事件被触发n秒后再执行回调，如果在这n秒内又被触发，则重新计时。
+      适用场景：
+        按钮提交场景：防止多次提交按钮，只执行最后提交的一次
+        搜索框联想场景：防止联想发送请求，只发送最后一次输入
+     */
+    // 防抖函数封装
+    function debounce(fn, delay) {
+      let timer = null
+      return function () {
+        // this指向触发事件的元素
+        let context = this
+        // arguments为传的参数
+        let args = arguments
+
+        if (timer) clearTimeout(timer)
+        timer = setTimeout(() => {
+          fn.apply(context, args)
+        }, delay)
+      }
+    }
+
+    /* 
+      原理：规定在一个单位时间内，只能触发一次函数。如果这个单位时间内触发多次函数，只有一次生效。
+      适用场景
+          拖拽场景：固定时间内只执行一次，防止超高频次触发位置变动
+          缩放场景：监控浏览器resize
+     */
+    // 节流
+    function throttle(fn, delay) {
+      let timer = null
+      return function () {
+        let content = this
+        let args = arguments
+        if (!timer) {
+          timer = setTimeout(function () {
+            timer = null
+            fn.apply(content, args)
+          }, delay)
+        }
+
+      }
+    }
+  </script>
+</body>
+
+</html>
